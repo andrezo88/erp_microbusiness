@@ -8,7 +8,7 @@ import { comparePassword } from "../utils/login/login-jwt.ts";
 import { IUserRepository } from "../repository/user-interface.repository.ts";
 
 export class UserService {
-  constructor(private userRepository: IUserRepository) { }
+  constructor(private userRepository: IUserRepository) {}
 
   async getAllUsers(): Promise<IUserResponse[]> {
     const users = await this.userRepository.find();
@@ -33,6 +33,7 @@ export class UserService {
       name: name,
       email: email,
       password: passwordEncrypted,
+      role: 1050,
     });
   }
 

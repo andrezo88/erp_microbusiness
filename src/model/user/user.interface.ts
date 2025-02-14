@@ -2,6 +2,7 @@ export interface IUserRequest {
   name: string;
   email: string;
   password: string;
+  role: number;
 }
 
 export interface IUserResponse {
