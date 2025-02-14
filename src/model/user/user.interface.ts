@@ -1,27 +1,35 @@
 export interface IUserRequest {
- name: string
- email: string
- password: string
+  name: string;
+  email: string;
+  password: string;
 }
 
 export interface IUserResponse {
- _id: string
- name: string
- email: string
+  _id: string;
+  name: string;
+  email: string;
 }
 
 export interface IUserLogin {
- email: string
- password: string
+  email: string;
+  password: string;
 }
 
 export interface IUserLoginResponse {
- _id: string
- name: string
- email: string
- role: number
+  _id: string;
+  name: string;
+  email: string;
+  role: number;
 }
 
 export interface IUserRequestUpdate extends IUserRequest {
- role: number
+  role: number;
+}
+
+export interface IUserResponseUpdate {
+  _id: string;
+  name: string;
+  password: string;
+  email: string;
+  role: number;
 }

@@ -1,18 +1,36 @@
-import express from 'express'
-import { userRoutes } from './user.routes.ts'
-import { loginRoutes } from './login.routes.ts'
-import { auth } from '../middleware/auth.middleware.ts'
-import { companyRoutes } from './company.routes.ts'
-import { productRoutes } from './product.routes.ts'
-import { stockRoutes } from './stock.routes.ts'
-import { orderRoutes } from './order.routes.ts'
+import express, { Express } from 'express'
+import { userRoute } from './user.routes.ts'
+import { loginRoute } from './login.routes.ts'
+import { companyRoute } from './company.routes.ts'
+import { productRoute } from './product.routes.ts'
+import { stockRoute } from './stock.routes.ts'
+import { errorMiddleware } from '../middleware/error.middleware.ts'
+import { orderRoute } from './order.routes.ts'
 
-const router = express.Router()
+export class App {
 
-router.use('/user', userRoutes)
-router.use('/login', loginRoutes)
-router.use('/company', auth, companyRoutes)
-router.use('/product', auth, productRoutes)
-router.use('/stock', auth, stockRoutes)
-router.use('/order', auth, orderRoutes)
-export { router }
+    public readonly server: Express
+
+    constructor() {
+        this.server = express()
+        this.server.use(express.json())
+        this.initializeRoutes()
+    }
+
+    private async initializeRoutes() {
+        const userRouter = await userRoute(this.server)
+        this.server.use('/user', userRouter)
+        const loginRouter = await loginRoute(this.server)
+        this.server.use('/login', loginRouter)
+        const companyRouter = await companyRoute(this.server)
+        this.server.use('/company', companyRouter)
+        const productRouter = await productRoute(this.server)
+        this.server.use('/product', productRouter)
+        const stockRouter = await stockRoute(this.server)
+        this.server.use('/stock', stockRouter)
+        const orderRouter = await orderRoute(this.server)
+        this.server.use('/order', orderRouter)
+
+        this.server.use(errorMiddleware)
+    }
+}

@@ -8,16 +8,18 @@ import { HttpException } from '../utils/Http-exception.ts'
 import { CustomRequest } from '../model/custom-request/express.model.ts'
 
 
-const userService = new UserService()
-
 export class UserController {
+
+    constructor(
+        private userService: UserService
+    ) {}
 
  public getAllUsers = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction) => {
   try {
-   const users = await userService.getAllUsers();
+   const users = await this.userService.getAllUsers();
    res.status(httpStatus.OK).json(users);
   } catch (error) {
    return next(errorHandler('getAllUsers', error));
@@ -40,7 +42,7 @@ export class UserController {
     );
    }
 
-   const createdUser = await userService.createUser(value);
+   const createdUser = await this.userService.createUser(value);
    res.status(httpStatus.CREATED).json(createdUser);
   } catch (error) {
    return next(errorHandler('createUser', error));
@@ -53,7 +55,7 @@ export class UserController {
   next: NextFunction) => {
   try {
    const { id } = req.params;
-   const user = await userService.getUserById(id);
+   const user = await this.userService.getUserById(id);
    res.status(httpStatus.OK).json(user);
   } catch (error) {
    return next(errorHandler('getUserById', error));
@@ -68,7 +70,7 @@ export class UserController {
    const { id } = req.params
    const user: IUserRequestUpdate = req.body
    const userRole: number = req.user?.role ?? 1050
-
+// melhorar a verificacao de role
    if (userRole !== 3050) {
     throw new HttpException(
      httpStatus.FORBIDDEN,
@@ -86,7 +88,7 @@ export class UserController {
     );
    }
 
-   const updatedUser = await userService.updateUser(id, value);
+   const updatedUser = await this.userService.updateUser(id, value);
    res.status(httpStatus.OK).json(updatedUser);
   } catch (error) {
    return next(errorHandler('updateUser', error));

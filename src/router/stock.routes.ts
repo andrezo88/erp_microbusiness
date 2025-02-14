@@ -1,11 +1,14 @@
 import { Router } from "express";
 import { StockController } from "../controller/stock.controller.ts";
+import { auth } from "../middleware/auth.middleware.ts";
+import { stockFactory } from "./factory/stock.factory.ts";
 
-const stockRoutes = Router();
+export async  function stockRoute(app: Router) {
 
-const stockController = new StockController();
+    const router = Router()
 
-stockRoutes.put('/:id', stockController.createStock);
-
-
-export { stockRoutes }
+    router.put("/:id", auth, async (req, res, next) => {
+        await stockFactory.createStock(req, res, next)
+    })
+    return router
+}

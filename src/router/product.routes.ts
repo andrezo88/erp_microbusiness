@@ -1,15 +1,28 @@
 import { Router } from "express"
-import { ProductController } from "../controller/product.controller.ts"
+import { productFactory } from "./factory/product.factory.ts"
+import { auth } from "../middleware/auth.middleware.ts"
 
-const productRoutes = Router()
+export async function productRoute(app: Router) {
+    
+    const router = Router()
 
-const productController = new ProductController()
-
-productRoutes.get('/', productController.getAllProducts)
-productRoutes.post('/', productController.createProduct)
-productRoutes.get('/:id', productController.getProductById)
-productRoutes.put('/:id', productController.updateProduct)
-productRoutes.post('/:id/approve', productController.approveProduct)
-productRoutes.put('/:id/sync', productController.syncProductToCompany)
-
-export { productRoutes }
+    router.get("/", auth, async (req, res, next) => {
+        await productFactory.getAllProducts(req, res, next)
+    })
+    router.post("/", auth, async (req, res, next) => {
+        await productFactory.createProduct(req, res, next)
+    })
+    router.get("/:id", auth, async (req, res, next) => {
+        await productFactory.getProductById(req, res, next)
+    })
+    router.put("/:id", auth, async (req, res, next) => {
+        await productFactory.updateProduct(req, res, next)
+    })
+    router.post("/:id/active", auth, async (req, res, next) => {
+        await productFactory.activeProduct(req, res, next)
+    })
+    router.put("/:id/sync", auth, async (req, res, next) => {
+        await productFactory.syncProductToCompany(req, res, next)
+    })
+    return router
+}

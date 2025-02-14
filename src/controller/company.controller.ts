@@ -11,14 +11,16 @@ const companyService = new CompanyService();
 
 export class CompanyController {
 
-
+    constructor(
+        private companyService: CompanyService = new CompanyService()
+    ) { }
  async getAllCompanies(
   req: CustomRequest,
   res: Response,
   next: NextFunction
  ): Promise<void> {
   try {
-   const companies = await companyService.getAllCompanies();
+   const companies = await this.companyService.getAllCompanies();
    res.status(httpStatus.OK).json(companies);
   } catch (error) {
    next(errorHandler("getAllCompanies", error));
@@ -53,7 +55,7 @@ export class CompanyController {
     );
    }
 
-   const createdCompany = await companyService.createCompany(value, userId);
+   const createdCompany = await this.companyService.createCompany(value, userId);
    res.status(httpStatus.CREATED).json(createdCompany);
   } catch (error) {
    return next(errorHandler("createCompany", error));
@@ -67,7 +69,7 @@ export class CompanyController {
  ) {
   try {
    const { id } = req.params;
-   const company = await companyService.getCompanyById(id);
+   const company = await this.companyService.getCompanyById(id);
    res.status(httpStatus.OK).json(company);
   } catch (error) {
    return next(errorHandler("getCompanyById", error));
@@ -91,7 +93,7 @@ export class CompanyController {
     );
    }
 
-   await companyService.updateCompany(id, value);
+   await this.companyService.updateCompany(id, value);
    res.status(httpStatus.NO_CONTENT).send();
   } catch (error) {
    return next(errorHandler("updateCompany", error));

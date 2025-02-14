@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { user } from '../../model/user/user.model.ts';
+import { UserRepository } from '../../repository/user/user.repository.ts';
+
+const userRepository = new UserRepository()
 
 export async function comparePasswordLogin(email: string, password: string) {
 
- const userFound = await user.findOne({ email: email })
+ const userFound = await userRepository.findByEmail( email )
 
  if (!userFound) {
   throw new Error('Usuário não encontrado')

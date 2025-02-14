@@ -1,24 +1,15 @@
-import express, { NextFunction, Request, Response } from 'express'
-import { DbConnection } from '../config/db-connection.ts'
-import logger from '../config/logger.ts'
-import { router } from '../router/index.ts'
-import { errorMiddleware, notFoundMiddleware } from '../middleware/error.middleware.ts'
+import { DbConnection } from "../config/db-connection.ts";
+import { App } from "../router/index.ts";
 
 export class Server {
- public static async start(): Promise<void> {
-  DbConnection.connect()
-  let app = express()
+  public static async start(): Promise<void> {
+    DbConnection.connect();
+    const port = process.env.PORT || 3000;
 
-  app.use(
-   express.json(),
-  )
+    const app = new App();
 
-  app.use('/', router)
-  app.use(errorMiddleware);
-  app.use("*", notFoundMiddleware);
-
-  app.listen(process.env.PORT || 3000, () => {
-   logger.info(`Server is running on port ${process.env.PORT}`)
-  })
- }
+    app.server.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  }
 }

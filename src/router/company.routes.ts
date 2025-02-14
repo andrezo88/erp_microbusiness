@@ -1,13 +1,23 @@
 import { Router } from "express"
-import { CompanyController } from "../controller/company.controller.ts"
+import { auth } from "../middleware/auth.middleware.ts"
+import { companyFactory } from "./factory/company.factory.ts"
 
-const companyRoutes = Router()
+export async function companyRoute(app: Router) {
 
-const companyController = new CompanyController()
-
-companyRoutes.post('/', companyController.createCompany)
-companyRoutes.get('/', companyController.getAllCompanies)
-companyRoutes.get('/:id', companyController.getCompanyById)
-companyRoutes.put('/:id', companyController.updateCompany)
-
-export { companyRoutes }
+    const router = Router()
+    
+    router.post("/", async (req, res, next) => {
+        await companyFactory.createCompany(req, res, next)
+    })
+    router.get("/", auth, async (req, res, next) => {
+        await companyFactory.getAllCompanies(req, res, next)
+    })
+    router.get("/:id", auth, async (req, res, next) => {
+        await companyFactory.getCompanyById(req, res, next)
+    })
+    router.put("/:id", auth, async (req, res, next) => {
+        await companyFactory.updateCompany(req, res, next)
+    })
+    return router
+    
+}

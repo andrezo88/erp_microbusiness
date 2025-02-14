@@ -1,128 +1,128 @@
-import { ICompanyResponse } from "../model/company/company.interface.ts";
-import { company } from "../model/company/company.model.ts";
-import { IProductRequest, IProductRequestUpdate, IProductResponse } from "../model/product/product.interface.ts"
-import { product } from "../model/product/product.model.ts"
-
+import {
+  IProductRequest,
+  IProductRequestUpdate,
+  IProductResponse,
+} from "../model/product/product.interface.ts";
+import { ICompanyRepository } from "../repository/company-interface.repository.ts";
+import { CompanyRepository } from "../repository/company/company.repository.ts";
+import { IProductRepository } from "../repository/product-interface.repository.ts";
+import { ProductRepository } from "../repository/product/product.repository.ts";
 
 export class ProductService {
+  constructor(
+    private productRepository: IProductRepository = new ProductRepository(),
+    private companyRepository: ICompanyRepository = new CompanyRepository()
+  ) {}
 
- public async getAllProducts(): Promise<IProductResponse[]> {
-  const products = await product.find()
-  return products.map((p: any) => ({
-   id: p.id,
-   name: p.name,
-   description: p.description,
-   category: p.category,
-   price: p.price,
-   stock: p.stock,
-   company: p.company
-  }));
- }
-
- public async createProduct(productEntity: IProductRequest): Promise<void> {
-
-  const { name, description, price } = productEntity
-
-  //const productExists = await product.findOne({ name: name})
-
-  //if (productExists) {
-  // throw new Error('Produto já cadastrado')
-  //}
-
-  await product.create({
-   name: name,
-   description: description,
-   price: price,
-  });
- }
-
- public async getProductById(id: string): Promise<IProductResponse> {
-
-  const productFound: IProductResponse = await product.findById(id) as IProductResponse
-
-  return {
-   id: productFound.id,
-   name: productFound.name,
-   description: productFound.description,
-   category: productFound.category,
-   price: productFound.price,
-   stock: productFound.stock,
-   company: productFound.company
-  };
- }
-
- public async updateProduct(id: string, productEntity: IProductRequestUpdate): Promise<void> {
-
-  const {
-   name,
-   description,
-   price,
-   stock,
-   company
-  } = productEntity
-
-  const productFound = await product.findById(id)
-
-  if (!productFound) {
-   throw new Error('Produto não encontrado')
+  public async getAllProducts(): Promise<IProductResponse[]> {
+    const products = await this.productRepository.find();
+    return products.map((p: any) => ({
+      _id: p._id,
+      name: p.name,
+      description: p.description,
+      category: p.category,
+      price: p.price,
+      stock: p.stock,
+      company: p.company,
+    }));
   }
 
-  if (productEntity.name !== productFound.name) {
-   productEntity.name = name
+  public async createProduct(productEntity: IProductRequest): Promise<void> {
+    const { name, description, company, category, price } = productEntity;
+
+    //const productExists = await product.findOne({ name: name})
+
+    //if (productExists) {
+    // throw new Error('Produto já cadastrado')
+    //}
+
+    await this.productRepository.create({
+      name: name,
+      description: description,
+      price: price,
+      category: category,
+      stock: 0,
+      company: company,
+    });
   }
 
-  if (productEntity.description !== productFound.description) {
-   productEntity.description = description
+  public async getProductById(id: string): Promise<IProductResponse> {
+    return  await this.productRepository.findById(id);
   }
 
-  if (productEntity.price !== productFound.price) {
-   productEntity.price = price
+  public async updateProduct(
+    id: string,
+    productEntity: IProductRequestUpdate
+  ): Promise<void> {
+    const { name, description, price, category, stock, company } =
+      productEntity;
+
+    const productFound = await this.productRepository.findById(id);
+
+    if (!productFound) {
+      throw new Error("Produto não encontrado");
+    }
+
+    if (productEntity.name !== productFound.name) {
+      productEntity.name = name;
+    }
+
+    if (productEntity.description !== productFound.description) {
+      productEntity.description = description;
+    }
+
+    if (productEntity.price !== productFound.price) {
+      productEntity.price = price;
+    }
+
+    if (productEntity.stock !== productFound.stock) {
+      productEntity.stock = stock;
+    }
+
+    await this.productRepository.findByIdAndUpdate(id, {
+      name: name,
+      description: description,
+      price: price,
+      stock: stock,
+      company: company,
+      category: category,
+    });
   }
 
-  if (productEntity.stock !== productFound.stock) {
-   productEntity.stock = stock
+  public async activeProductInserted(id: string): Promise<void> {
+    const productFound = await this.productRepository.findById(id);
+
+    console.log("productfoundserive", productFound);
+
+    if (!productFound) {
+      throw new Error("Produto não encontrado");
+    }
+
+    const product = await this.productRepository.updateActive(id, true);
+    console.log("product serive", product);
   }
 
+  public async syncProductToCompany(
+    id: string,
+    companyId: string
+  ): Promise<void> {
+    console.log("idService", id);
+    console.log("companyService", companyId);
+    const productFound = await this.productRepository.findById(id);
 
-  await product.findByIdAndUpdate(id, {
-   name: name,
-   description: description,
-   price: price,
-   stock: stock,
-   company: company
-  })
- }
+    if (!productFound) {
+      throw new Error("Produto não encontrado");
+    }
 
- public async approveProduct(id: string): Promise<void> {
-  const productFound = await product.findById(id) as IProductResponse
+    const companyFound = await this.companyRepository.findById(companyId);
 
-  if (!productFound) {
-   throw new Error('Produto não encontrado')
+    if (!companyFound) {
+      throw new Error("Empresa não encontrada");
+    }
+
+    await this.productRepository.updateCompany(
+      id,
+      companyId
+    );
   }
-
-  await product.updateOne(
-   { _id: id },
-   { isActive: true }
-  )
- }
-
- public async syncProductToCompany(id: string, companyId: string): Promise<void> {
-  const productFound = await product.findById(id) as IProductResponse
-
-  if (!productFound) {
-   throw new Error('Produto não encontrado')
-  }
-
-  const companyFound = await company.findById(companyId) as ICompanyResponse
-
-  if (!companyFound) {
-   throw new Error('Empresa não encontrada')
-  }
-
-  await product.updateOne(
-   { _id: id },
-   { $push: { company: companyFound.document } }
-  )
- }
-
 }

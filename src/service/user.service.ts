@@ -1,13 +1,16 @@
-import { Types } from 'mongoose';
 import { IUserRequest, IUserRequestUpdate, IUserResponse } from '../model/user/user.interface.ts'
-import { user } from '../model/user/user.model.ts'
 import { encryptPassword } from '../utils/encrypt/password-encrypt.ts';
 import { comparePassword } from '../utils/login/login-jwt.ts';
+import { IUserRepository } from '../repository/user-interface.repository.ts';
 
 export class UserService {
 
- public async getAllUsers(): Promise<IUserResponse[]> {
-  const users = await user.find()
+    constructor(
+        private userRepository: IUserRepository
+    ) {}
+
+ async getAllUsers(): Promise<IUserResponse[]> {
+  const users = await this.userRepository.find()
   return users.map((u: any) => ({
    _id: u._id,
    name: u.name,
@@ -19,24 +22,23 @@ export class UserService {
 
   const { name, email, password } = userEntity
 
-  const uniqueEmail = await user.findOne({ email: email })
+  const uniqueEmail = await this.userRepository.findByEmail( email )
 
   if (uniqueEmail) {
    throw new Error('Email já cadastrado')
   }
 
   const passwordEncrypted = await encryptPassword(password)
-
-  await user.create({
-   name: name,
-   email: email,
-   password: passwordEncrypted
+  await this.userRepository.create({
+    name: name,
+    email: email,
+    password: passwordEncrypted,
   });
  }
 
- public async getUserById(id: string): Promise<IUserResponse> {
+ async getUserById(id: string): Promise<IUserResponse> {
 
-  const userFound: IUserResponse = await user.findById(id) as IUserResponse
+  const userFound: IUserResponse = await this.userRepository.findOne(id)
 
   return {
    _id: userFound._id,
@@ -45,7 +47,7 @@ export class UserService {
   };
  }
 
- public async updateUser(id: string, userEntity: IUserRequestUpdate): Promise<void> {
+ async updateUser(id: string, userEntity: IUserRequestUpdate): Promise<void> {
 
   const {
    name,
@@ -54,7 +56,7 @@ export class UserService {
    role
   } = userEntity
 
-  const userFound = await user.findById(id)
+  const userFound = await this.userRepository.findOneToUpdate(id)
 
   if (!userFound) {
    throw new Error('Usuário não encontrado')
@@ -80,7 +82,7 @@ export class UserService {
    userEntity.role = role;
   }
 
-  await user.findByIdAndUpdate(id, {
+  await this.userRepository.update(id, {
    name: userEntity.name,
    email: userEntity.email,
    password: userEntity.password,

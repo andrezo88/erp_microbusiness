@@ -1,4 +1,3 @@
-import { ref } from "joi";
 import { model, Schema, Types } from "mongoose";
 
 const stockSchema = new Schema({
