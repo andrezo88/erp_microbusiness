@@ -14,20 +14,12 @@ export class ProductService {
     private companyRepository: ICompanyRepository = new CompanyRepository()
   ) {}
 
-  public async getAllProducts(): Promise<IProductResponse[]> {
+  async getAllProducts(): Promise<IProductResponse[]> {
     const products = await this.productRepository.find();
-    return products.map((p: any) => ({
-      _id: p._id,
-      name: p.name,
-      description: p.description,
-      category: p.category,
-      price: p.price,
-      stock: p.stock,
-      company: p.company,
-    }));
+    return products;
   }
 
-  public async createProduct(productEntity: IProductRequest): Promise<void> {
+  async createProduct(productEntity: IProductRequest): Promise<void> {
     const { name, description, company, category, price } = productEntity;
 
     //const productExists = await product.findOne({ name: name})
@@ -46,11 +38,11 @@ export class ProductService {
     });
   }
 
-  public async getProductById(id: string): Promise<IProductResponse> {
-    return  await this.productRepository.findById(id);
+  async getProductById(id: string): Promise<IProductResponse> {
+    return await this.productRepository.findById(id);
   }
 
-  public async updateProduct(
+  async updateProduct(
     id: string,
     productEntity: IProductRequestUpdate
   ): Promise<void> {
@@ -89,23 +81,23 @@ export class ProductService {
     });
   }
 
-  public async activeProductInserted(id: string): Promise<void> {
+  async activeProductCreated(id: string): Promise<void> {
     const productFound = await this.productRepository.findById(id);
-
-    console.log("productfoundserive", productFound);
-
     if (!productFound) {
       throw new Error("Produto não encontrado");
     }
-
-    const product = await this.productRepository.updateActive(id, true);
-    console.log("product serive", product);
+    await this.productRepository.updateActiveProduct(id);
   }
 
-  public async syncProductToCompany(
-    id: string,
-    companyId: string
-  ): Promise<void> {
+  async desactiveProduct(id: string) {
+    const productFound = await this.productRepository.findById(id);
+    if (!productFound) {
+      throw new Error("Produto não encontrado");
+    }
+    await this.productRepository.updateDesactiveProduct(id);
+  }
+
+  async syncProductToCompany(id: string, companyId: string): Promise<void> {
     console.log("idService", id);
     console.log("companyService", companyId);
     const productFound = await this.productRepository.findById(id);
@@ -120,9 +112,6 @@ export class ProductService {
       throw new Error("Empresa não encontrada");
     }
 
-    await this.productRepository.updateCompany(
-      id,
-      companyId
-    );
+    await this.productRepository.updateCompany(id, companyId);
   }
 }

@@ -2,7 +2,6 @@ import {
   ICompanyRequest,
   ICompanyResponse,
 } from "../model/company/company.interface.ts";
-import { company } from "../model/company/company.model.ts";
 import { CompanyRepository } from "../repository/company/company.repository.ts";
 import { encryptPassword } from "../utils/encrypt/password-encrypt.ts";
 import { comparePassword } from "../utils/login/login-jwt.ts";
@@ -11,14 +10,8 @@ export class CompanyService {
   constructor(private companyRepository = new CompanyRepository()) {}
 
   async getAllCompanies() {
-    const companies = await company.find();
-    return companies.map((c: any) => ({
-      _id: c._id,
-      name: c.name,
-      email: c.email,
-      document: c.document,
-      user: c.user,
-    }));
+    const companies = await this.companyRepository.find();
+    return companies;
   }
 
   async createCompany(
@@ -124,5 +117,8 @@ export class CompanyService {
       document: companyEntity.document,
       user: companyEntity.user,
     });
+  }
+  async deleteCompany(id: string): Promise<void> {
+    await this.companyRepository.delete(id);
   }
 }
